@@ -4,9 +4,9 @@
 > Built by [Sav Banerjee](https://github.com/nycsav) · [Enso Labs](https://ensolabs.ai)
 
 [![Monad Testnet](https://img.shields.io/badge/Monad-Testnet%2010143-836EF9?style=flat-square&logo=ethereum)](https://testnet.monadexplorer.com)
-[![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%203.5-CC785C?style=flat-square)](https://anthropic.com)
+[![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-CC785C?style=flat-square)](https://anthropic.com)
 [![Perplexity](https://img.shields.io/badge/Perplexity-Research-20808D?style=flat-square)](https://perplexity.ai)
-[![Vercel](https://img.shields.io/badge/Dashboard-Live-000000?style=flat-square&logo=vercel)](https://monad-swarm.vercel.app)
+[![Dashboard](https://img.shields.io/badge/Dashboard-run%20locally-000000?style=flat-square&logo=vite)](#-quick-start)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 ---
@@ -21,15 +21,25 @@ Each agent's reasoning is **permanently anchored on-chain** via a keccak256 hash
 
 ## 🔴 Live On-Chain Proof
 
-**Three agents, one block (#37,216,124), chain ID 10143:**
+**Parallel settlement — 3 agents, one block (#37,216,124), chain ID 10143:**
 
 | Agent | Strategy | Tx Hash |
 |---|---|---|
-| Agent 1 | Momentum | [`0x2bbd...b8d`](https://testnet.monadexplorer.com/tx/0x2bbd8e26cf72aa84fc5ddbce428168c312d9f2de3599d8031a3fd7cb45c83b8d) |
-| Agent 2 | Mean Reversion | [`0x34aa...232`](https://testnet.monadexplorer.com/tx/0x34aa395ffb7b68143fcf783376435afc54ea41d7d0b0a1d9928e08d6858ae232) |
-| Agent 3 | Arbitrage | [`0x2c9c...219`](https://testnet.monadexplorer.com/tx/0x2c9c27b4c681734cf78e27a6a379195684edd546209cf96432a5ef99a6e2f219) |
+| Agent 1 | Momentum | [`0x2bbd...b8d`](https://testnet.monadscan.com/tx/0x2bbd8e26cf72aa84fc5ddbce428168c312d9f2de3599d8031a3fd7cb45c83b8d) |
+| Agent 2 | Mean Reversion | [`0x34aa...232`](https://testnet.monadscan.com/tx/0x34aa395ffb7b68143fcf783376435afc54ea41d7d0b0a1d9928e08d6858ae232) |
+| Agent 3 | Arbitrage | [`0x2c9c...219`](https://testnet.monadscan.com/tx/0x2c9c27b4c681734cf78e27a6a379195684edd546209cf96432a5ef99a6e2f219) |
 
-All three landed in a single block with tx-indices 4/5/6. Three distinct on-chain senders, one block — this is Monad's parallel execution in production.
+All three landed in a single block (tx-indices 4/5/6) — three distinct senders, one block: Monad's parallel execution in production.
+
+**Live Claude-Haiku 4.5 signals — anchored on-chain (blocks #37,217,877–878):**
+
+| Agent | Strategy | Tx Hash |
+|---|---|---|
+| Agent 1 | Momentum (BULL) | [`0x7810...d50`](https://testnet.monadscan.com/tx/0x781028a996100008f396af76f3c57998bd40c6adbec49a1bbafa509b60176d50) |
+| Agent 2 | Mean Reversion (BEAR) | [`0x7ffd...7e3`](https://testnet.monadscan.com/tx/0x7ffd580ac9227b2c48d4822f4622c77870b7e08a46f0f2350a3ca1d2c8a647e3) |
+| Agent 3 | Arbitrage (BULL) | [`0x507d...c29`](https://testnet.monadscan.com/tx/0x507dcfe7f07d8fe0a1bcd1fff27bdaf267217f39b5f58d79337d58c7af049c29) |
+
+Each agent's Claude-generated reasoning is keccak256-hashed and anchored via SignalAnchor (`totalSignals() = 6` across both runs).
 
 ---
 
@@ -91,10 +101,12 @@ All 4 contracts source-verified ("perfect match") on MonadVision + Socialscan:
 
 ```
 monad-blitz-nyc/
-├── agents/                  # Python swarm: 3 Claude Haiku agents
-│   ├── swarm.py             # Parallel agent orchestration
-│   ├── register_agents.py   # On-chain NFT registration
-│   ├── fund_agents.py       # Wallet funding from deployer
+├── agents/                  # TypeScript swarm: 3 Claude Haiku 4.5 agents
+│   ├── src/swarm.ts         # Parallel agent orchestration (Promise.all)
+│   ├── src/agent.ts         # One cycle: price → signal → EIP-712 sign → submit
+│   ├── src/claude.ts        # Claude Haiku 4.5 structured signal brain
+│   ├── src/register.ts      # On-chain agent NFT registration
+│   ├── src/pyth.ts          # Pyth (Hermes) price feed
 │   └── .env.example         # Required env vars (no secrets committed)
 ├── contracts/               # Solidity smart contracts
 │   ├── src/
@@ -106,7 +118,7 @@ monad-blitz-nyc/
 ├── frontend/                # Vite + React + wagmi dashboard
 │   ├── src/
 │   │   ├── App.tsx          # Main dashboard
-│   │   ├── config.ts        # Public contract addresses (baked in)
+│   │   ├── lib/config.ts    # Public contract addresses (baked in)
 │   │   └── components/      # Signal feed, agent cards, metrics
 │   └── package.json
 ├── RESEARCH.md              # Deep research doc (Perplexity-powered)
@@ -122,8 +134,8 @@ This project was built entirely with AI-assisted development:
 
 | Tool | Role |
 |---|---|
-| **Claude Haiku 3.5** | Live agent signal generation (on-chain reasoning) |
-| **Claude Code (Sonnet 3.5)** | Full-stack development, contract writing, debugging |
+| **Claude Haiku 4.5** | Live agent signal generation (on-chain reasoning) |
+| **Claude Code (Opus 4.8)** | Full-stack development, contract writing, debugging |
 | **Perplexity AI (Max)** | Deep research — Monad architecture, EIP-712, Pyth feeds |
 | **Conductor** | Multi-agent Claude Code orchestration (parallel workspaces) |
 | **GitHub MCP** | Direct repo management from Perplexity conversation |
@@ -151,10 +163,10 @@ npm run dev
 ```bash
 cd agents
 cp .env.example .env
-# Fill in: DEPLOYER_PRIVATE_KEY, ANTHROPIC_API_KEY
-pip install -r requirements.txt
-python register_agents.py   # Mint agent NFTs (once)
-python swarm.py             # Launch parallel Claude swarm
+# Fill in: AGENT1/2/3_PRIVATE_KEY, DEPLOYER_PRIVATE_KEY, ANTHROPIC_API_KEY
+npm install
+npm run register            # Mint agent NFTs (once)
+npm run swarm -- --live     # Launch parallel Claude swarm
 ```
 
 ### Deploy Contracts (Foundry)
@@ -201,7 +213,7 @@ Monad's RPC caps `eth_getLogs` at ~100 blocks. The dashboard uses chunked 100-bl
 
 ## 📊 Demo Dashboard
 
-Live at: **[monad-swarm.vercel.app](https://monad-swarm.vercel.app)**
+Run locally: `cd frontend && npm install && npm run dev` → **http://localhost:5173** (reads live on-chain data, no setup required). *Hosted deploy not yet live.*
 
 Features:
 - Real-time signal feed from `SignalAnchored` events
