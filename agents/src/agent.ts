@@ -67,7 +67,7 @@ export async function runCycle(cfg: StrategyConfig, opts: { live: boolean } = { 
     domain: domain(verifyingContract),
     types: tradeIntentTypes,
     primaryType: 'TradeIntent',
-    message: intent as unknown as Record<string, unknown>,
+    message: intent,
   });
 
   // 5. Recover the signer locally — exactly what RiskRouter.executeIntent does on-chain
@@ -75,7 +75,7 @@ export async function runCycle(cfg: StrategyConfig, opts: { live: boolean } = { 
     domain: domain(verifyingContract),
     types: tradeIntentTypes,
     primaryType: 'TradeIntent',
-    message: intent as unknown as Record<string, unknown>,
+    message: intent,
     signature,
   });
   const signerOk = recovered.toLowerCase() === account.address.toLowerCase();

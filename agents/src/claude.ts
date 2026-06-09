@@ -57,7 +57,6 @@ export async function generateSignal(input: SignalInput): Promise<Signal> {
     max_tokens: 1024,
     system,
     messages: [{ role: 'user', content: user }],
-    // @ts-expect-error output_config is a current API param; tsx strips types at runtime
     output_config: { format: { type: 'json_schema', schema: signalJsonSchema } },
   });
 
