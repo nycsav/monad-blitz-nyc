@@ -4,8 +4,8 @@
 > Built by [Sav Banerjee](https://github.com/nycsav) · [Enso Labs](https://ensolabs.ai)
 
 [![Monad Testnet](https://img.shields.io/badge/Monad-Testnet%2010143-836EF9?style=flat-square&logo=ethereum)](https://testnet.monadexplorer.com)
-[![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%203.5-CC785C?style=flat-square)](https://anthropic.com)
-[![Perplexity](https://img.shields.io/badge/Perplexity-Research-20808D?style=flat-square)](https://perplexity.ai)
+[![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-CC785C?style=flat-square)](https://anthropic.com)
+[![Perplexity](https://img.shields.io/badge/Perplexity-Research%20%26%20GitHub%20MCP-20808D?style=flat-square)](https://perplexity.ai)
 [![Vercel](https://img.shields.io/badge/Dashboard-Live-000000?style=flat-square&logo=vercel)](https://monad-swarm.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
@@ -13,9 +13,11 @@
 
 ## What is MonadSwarm?
 
-MonadSwarm is a **multi-agent AI trading system** that demonstrates Monad's parallel execution at its most literal: three autonomous Claude-powered trading agents — each with its own strategy, wallet, and on-chain identity — submit cryptographically-signed trade intents **concurrently into the same block**.
+MonadSwarm is a **multi-agent AI trading system** that demonstrates Monad's parallel execution at its most literal: three autonomous trading agents — each with its own strategy, wallet, and on-chain identity — submit cryptographically-signed trade intents **concurrently into the same block**.
 
 Each agent's reasoning is **permanently anchored on-chain** via a keccak256 hash, creating a tamper-evident, independently verifiable link between every off-chain AI decision and its on-chain action. This isn't a simulation — the contracts are deployed, verified, and producing real events on Monad testnet right now.
+
+> **Honest disclosure:** The three transactions below used the mock signal heuristic (the `ANTHROPIC_API_KEY` was absent from `agents/.env` at run time, so the swarm correctly fell back). The on-chain mechanics — EIP-712 verification, anchoring, reputation updates, and parallel block inclusion — are 100% real. A re-run with a live Haiku 4.5 key produces identical on-chain behavior with genuine LLM reasoning hashes.
 
 ---
 
@@ -118,15 +120,15 @@ monad-blitz-nyc/
 
 ## 🤖 AI & LLM Stack
 
-This project was built entirely with AI-assisted development:
+This project was built entirely with AI-assisted development across a single hackathon day:
 
 | Tool | Role |
 |---|---|
-| **Claude Haiku 3.5** | Live agent signal generation (on-chain reasoning) |
-| **Claude Code (Sonnet 3.5)** | Full-stack development, contract writing, debugging |
-| **Perplexity AI (Max)** | Deep research — Monad architecture, EIP-712, Pyth feeds |
+| **Claude Haiku 4.5** | Agent signal generation target (on-chain reasoning hashes) |
+| **Claude Code (Sonnet 4.5)** | Full-stack development, contract writing, debugging |
+| **Perplexity AI (Max)** | Deep research, architecture planning, and GitHub repo management via MCP |
 | **Conductor** | Multi-agent Claude Code orchestration (parallel workspaces) |
-| **GitHub MCP** | Direct repo management from Perplexity conversation |
+| **GitHub MCP** | Direct repo commits and PR management from Perplexity conversation |
 
 > The entire project — from zero blockchain experience to 4 deployed verified contracts — was built in a single hackathon day using this AI stack.
 
@@ -151,10 +153,10 @@ npm run dev
 ```bash
 cd agents
 cp .env.example .env
-# Fill in: DEPLOYER_PRIVATE_KEY, ANTHROPIC_API_KEY
+# Fill in: DEPLOYER_PRIVATE_KEY, ANTHROPIC_API_KEY (Claude Haiku 4.5)
 pip install -r requirements.txt
 python register_agents.py   # Mint agent NFTs (once)
-python swarm.py             # Launch parallel Claude swarm
+python swarm.py             # Launch parallel swarm
 ```
 
 ### Deploy Contracts (Foundry)
