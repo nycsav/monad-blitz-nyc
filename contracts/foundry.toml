@@ -1,0 +1,22 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+evm_version = "cancun"
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[rpc_endpoints]
+monad_testnet = "https://testnet-rpc.monad.xyz"
+monad_fallback = "https://rpc.ankr.com/monad_testnet"
+
+[etherscan]
+# Monadscan verification (sourcify-style); fill key if available
+monad_testnet = { key = "${MONADSCAN_API_KEY}", url = "https://testnet.monadscan.com/api", chain = 10143 }
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

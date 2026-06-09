@@ -1,0 +1,19 @@
+# Secrets — never commit (this is a PUBLIC submission repo)
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+
+# Node
+node_modules/
+**/node_modules/
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Misc
+.DS_Store
+dist/
