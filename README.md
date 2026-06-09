@@ -6,7 +6,7 @@
 [![Monad Testnet](https://img.shields.io/badge/Monad-Testnet%2010143-836EF9?style=flat-square&logo=ethereum)](https://testnet.monadexplorer.com)
 [![Claude Haiku](https://img.shields.io/badge/Claude-Haiku%204.5-CC785C?style=flat-square)](https://anthropic.com)
 [![Perplexity](https://img.shields.io/badge/Perplexity-Research-20808D?style=flat-square)](https://perplexity.ai)
-[![Dashboard](https://img.shields.io/badge/Dashboard-run%20locally-000000?style=flat-square&logo=vite)](#-quick-start)
+[![Live Demo](https://img.shields.io/badge/Demo-Live-22c55e?style=flat-square&logo=vercel)](https://monad-blitz-nyc.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 ---
@@ -213,7 +213,9 @@ Monad's RPC caps `eth_getLogs` at ~100 blocks. The dashboard uses chunked 100-bl
 
 ## 📊 Demo Dashboard
 
-Run locally: `cd frontend && npm install && npm run dev` → **http://localhost:5173** (reads live on-chain data, no setup required). *Hosted deploy not yet live.*
+**Live:** [monad-blitz-nyc.vercel.app](https://monad-blitz-nyc.vercel.app) — reads live `SignalAnchored` events directly from Monad testnet (no wallet needed).
+
+Or run locally: `cd frontend && npm install && npm run dev` → http://localhost:5173
 
 Features:
 - Real-time signal feed from `SignalAnchored` events
