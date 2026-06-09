@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseAbiItem } from 'viem';
 import { publicClient } from '../lib/wagmi';
 import { SIGNAL_ANCHOR, HAS_SIGNAL_ANCHOR } from '../lib/config';
+import { signalAnchorAbi } from '../lib/abis';
 import type { SignalEvent } from '../lib/types';
 import { generateMockSignals } from '../lib/mock';
 
@@ -13,7 +14,6 @@ const SIGNAL_ANCHORED = parseAbiItem(
 // SILENTLY return empty (verified), which would drop the feed into simulate mode.
 // So every query is split into <=CHUNK windows and fanned out in parallel batches.
 const CHUNK = 100n;
-const BACKFILL_RANGE = 6000n; // ~40 min of history at 0.4s blocks
 const BATCH = 10; // parallel getLogs per wave (stays under RPC rps cap)
 const POLL_MS = 4000;
 
@@ -98,6 +98,72 @@ async function getLogsChunked(from: bigint, to: bigint): Promise<RawLog[]> {
   return out;
 }
 
+type SignalRecord = {
+  agentId: bigint;
+  reasoningHash: `0x${string}`;
+  price: bigint;
+  direction: number;
+  timestamp: bigint;
+  blockNumber: bigint;
+};
+
+/**
+ * Backfill the full signal history via getSignal() view calls — age-independent,
+ * so the feed shows real events no matter how far back they were anchored
+ * (getLogs is capped to ~100-block ranges on Monad). Each tx hash is recovered
+ * with a narrow single-block getLogs.
+ */
+async function backfillViaContract(): Promise<SignalEvent[]> {
+  const total = (await publicClient.readContract({
+    address: SIGNAL_ANCHOR,
+    abi: signalAnchorAbi,
+    functionName: 'totalSignals',
+  })) as bigint;
+  const n = Number(total);
+  if (n === 0) return [];
+
+  const startIdx = Math.max(0, n - 200); // cap to most recent 200
+  const ids = Array.from({ length: n - startIdx }, (_, i) => BigInt(startIdx + i));
+  const records = await Promise.all(
+    ids.map((id) =>
+      publicClient
+        .readContract({ address: SIGNAL_ANCHOR, abi: signalAnchorAbi, functionName: 'getSignal', args: [id] })
+        .then((rec) => ({ id, rec: rec as SignalRecord }))
+        .catch(() => null),
+    ),
+  );
+  const valid = records.filter((r): r is { id: bigint; rec: SignalRecord } => r !== null);
+  if (valid.length === 0) return [];
+
+  // Recover tx hashes: one narrow (single-block) getLogs per unique block.
+  const uniqueBlocks = [...new Set(valid.map((v) => v.rec.blockNumber))];
+  const logsByBlock = new Map<string, RawLog[]>();
+  await Promise.all(
+    uniqueBlocks.map(async (b) => {
+      const logs = await publicClient
+        .getLogs({ address: SIGNAL_ANCHOR, event: SIGNAL_ANCHORED, fromBlock: b, toBlock: b })
+        .catch(() => [] as unknown[]);
+      logsByBlock.set(b.toString(), logs as unknown as RawLog[]);
+    }),
+  );
+
+  return valid.map(({ id, rec }) => {
+    const blkLogs = logsByBlock.get(rec.blockNumber.toString()) ?? [];
+    const match = blkLogs.find((l) => l.args.signalId === id);
+    return {
+      signalId: id,
+      agentId: rec.agentId,
+      reasoningHash: rec.reasoningHash,
+      price: rec.price,
+      direction: typeof rec.direction === 'number' ? rec.direction : Number(rec.direction),
+      timestamp: rec.timestamp,
+      blockNumber: rec.blockNumber,
+      txHash: (match?.transactionHash ?? '0x') as `0x${string}`,
+      logIndex: match?.logIndex ?? Number(id),
+    };
+  });
+}
+
 export function useSignalEvents(): UseSignalEventsResult {
   const [events, setEvents] = useState<SignalEvent[]>([]);
   const [status, setStatus] = useState<Status>('idle');
@@ -163,12 +229,11 @@ export function useSignalEvents(): UseSignalEventsResult {
         const latest = await publicClient.getBlockNumber();
         if (cancelled) return;
         setLatestBlock(latest);
-        const from = latest > BACKFILL_RANGE ? latest - BACKFILL_RANGE : 0n;
 
-        const logs = await getLogsChunked(from, latest);
+        // Age-independent backfill via getSignal() — shows real events no matter
+        // how far back they were anchored (getLogs only sees ~100 recent blocks).
+        const mapped = await backfillViaContract();
         if (cancelled) return;
-
-        const mapped = logs.map(toEvent);
         lastScannedRef.current = latest;
 
         if (mapped.length === 0) {

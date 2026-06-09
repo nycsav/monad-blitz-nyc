@@ -9,6 +9,27 @@ export const signalAnchorAbi = [
     outputs: [{ type: 'uint256' }],
   },
   {
+    // Age-independent read of any anchored signal by id — used to backfill
+    // history regardless of how far back it is (getLogs has a ~100-block cap).
+    type: 'function',
+    name: 'getSignal',
+    stateMutability: 'view',
+    inputs: [{ name: 'signalId', type: 'uint256' }],
+    outputs: [
+      {
+        type: 'tuple',
+        components: [
+          { name: 'agentId', type: 'uint256' },
+          { name: 'reasoningHash', type: 'bytes32' },
+          { name: 'price', type: 'int256' },
+          { name: 'direction', type: 'int8' },
+          { name: 'timestamp', type: 'uint64' },
+          { name: 'blockNumber', type: 'uint256' },
+        ],
+      },
+    ],
+  },
+  {
     type: 'event',
     name: 'SignalAnchored',
     inputs: [
